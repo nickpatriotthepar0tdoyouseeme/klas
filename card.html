@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سفارش کارت ورود به کلاس</title>
+    <script>
+        // Initialize IndexedDB
+        let db;
+        const request = indexedDB.open("classEntryDB", 1);
+
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains("orders")) {
+                db.createObjectStore("orders", { keyPath: "id", autoIncrement: true });
+            }
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+        };
+
+        request.onerror = function(event) {
+            console.log("IndexedDB Error: ", event.target.error);
+        };
+
+        function saveOrder(name, password, type) {
+            if (!db) return;
+            const transaction = db.transaction(["orders"], "readwrite");
+            const store = transaction.objectStore("orders");
+            store.add({ name, password, type, timestamp: new Date().toISOString() });
+        }
+
+        function submitForm() {
+            const name = document.getElementById("name").value;
+            const password = document.getElementById("password").value;
+            const type = document.getElementById("type").value;
+            const agree = document.getElementById("agree").checked;
+
+            // Validate fields
+            if (!name || !password || !type) {
+                alert("لطفاً تمام فیلدها را پر کنید.");
+                return;
+            }
+            if (!agree) {
+                alert("باید شرایط و راهنما را بپذیرید.");
+                return;
+            }
+
+            // Verify password
+            if (password !== "right-w-extreme-n-nazists-9[4]") {
+                alert("رمز عبور اشتباه است!");
+                return;
+            }
+
+            // Save order in IndexedDB
+            saveOrder(name, password, type);
+
+            // Select the correct PDF file
+            let pdfFile = "";
+            if (type === "1") pdfFile = "output2.pdf";
+            else if (type === "2") pdfFile = "output.pdf";
+            else if (type === "3") pdfFile = "output3.pdf";
+
+            // Trigger download
+            const link = document.createElement("a");
+            link.href = pdfFile;
+            link.download = pdfFile;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</head>
+<body>
+    <h2>سفارش کارت ورود به کلاس</h2>
+    
+    <label for="name">نام:</label>
+    <input type="text" id="name" required><br><br>
+
+    <label for="password">رمز ویژه فیزیکدان:</label>
+    <input type="password" id="password" required><br><br>
+
+    <label for="type">نوع کارت:</label>
+    <select id="type" required>
+        <option value="">انتخاب کنید</option>
+        <option value="1">ورود به کلاس</option>
+        <option value="2">مراجعه به دفتر</option>
+        <option value="3">با وسایل از کلاس خارج شدن</option>
+    </select><br><br>
+
+    <input type="checkbox" id="agree">
+    <label for="agree">راهنما و شرایط را می‌پذیرم</label><br><br>
+
+    <button onclick="submitForm()">ارسال درخواست</button>
+</body>
+</html>
