@@ -1,97 +1,87 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سفارش کارت ورود به کلاس</title>
-    <script>
-        // Initialize IndexedDB
-        let db;
-        const request = indexedDB.open("classEntryDB", 1);
-
-        request.onupgradeneeded = function(event) {
-            db = event.target.result;
-            if (!db.objectStoreNames.contains("orders")) {
-                db.createObjectStore("orders", { keyPath: "id", autoIncrement: true });
-            }
-        };
-
-        request.onsuccess = function(event) {
-            db = event.target.result;
-        };
-
-        request.onerror = function(event) {
-            console.log("IndexedDB Error: ", event.target.error);
-        };
-
-        function saveOrder(name, password, type) {
-            if (!db) return;
-            const transaction = db.transaction(["orders"], "readwrite");
-            const store = transaction.objectStore("orders");
-            store.add({ name, password, type, timestamp: new Date().toISOString() });
+    <title>Class Entry Card Reservation</title>
+    <style>
+        body {
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlywtMRjO7KJPht95ggcFVlZhcV-DeWnz1tw&s');
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            text-align: center;
         }
+        .container {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            width: 300px;
+            margin: 100px auto;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Reserve Your Class Entry Card</h2>
+        <label for="name">Name:</label>
+        <input type="text" id="name" required><br><br>
 
+        <label for="password">Special Password:</label>
+        <input type="password" id="password" required><br><br>
+
+        <label for="code">Reservation Code:</label>
+        <input type="text" id="code" required><br><br>
+
+        <label for="type">Card Type:</label>
+        <select id="type">
+            <option value="1">Vorood be kelas</option>
+            <option value="2">Morajeeh be dafter</option>
+            <option value="3">Ba vasayel az kelas kharej shodan</option>
+        </select><br><br>
+
+        <input type="checkbox" id="guidelines"> I accept the guidelines<br><br>
+        <button onclick="submitForm()">Submit</button>
+    </div>
+
+    <script>
         function submitForm() {
             const name = document.getElementById("name").value;
             const password = document.getElementById("password").value;
+            const code = document.getElementById("code").value;
             const type = document.getElementById("type").value;
-            const agree = document.getElementById("agree").checked;
+            const guidelines = document.getElementById("guidelines").checked;
 
-            // Validate fields
-            if (!name || !password || !type) {
-                alert("لطفاً تمام فیلدها را پر کنید.");
-                return;
-            }
-            if (!agree) {
-                alert("باید شرایط و راهنما را بپذیرید.");
-                return;
-            }
-
-            // Verify password
             if (password !== "right-w-extreme-n-nazists-9[4]") {
-                alert("رمز عبور اشتباه است!");
+                alert("Incorrect special password!");
                 return;
             }
 
-            // Save order in IndexedDB
-            saveOrder(name, password, type);
+            if (!guidelines) {
+                alert("You must accept the guidelines!");
+                return;
+            }
 
-            // Select the correct PDF file
+            if ((code === "123" && type !== "1") || (code === "456" && type !== "2") || (code === "789" && type !== "3")) {
+                alert("Incorrect code for the selected type!");
+                return;
+            }
+
             let pdfFile = "";
             if (type === "1") pdfFile = "output2.pdf";
-            else if (type === "2") pdfFile = "output.pdf";
-            else if (type === "3") pdfFile = "output3.pdf";
+            if (type === "2") pdfFile = "output.pdf";
+            if (type === "3") pdfFile = "output3.pdf";
 
-            // Trigger download
+            downloadPDF(pdfFile);
+        }
+
+        function downloadPDF(filename) {
             const link = document.createElement("a");
-            link.href = pdfFile;
-            link.download = pdfFile;
+            link.href = filename;
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
     </script>
-</head>
-<body>
-    <h2>سفارش کارت ورود به کلاس</h2>
-    
-    <label for="name">نام:</label>
-    <input type="text" id="name" required><br><br>
-
-    <label for="password">رمز ویژه فیزیکدان:</label>
-    <input type="password" id="password" required><br><br>
-
-    <label for="type">نوع کارت:</label>
-    <select id="type" required>
-        <option value="">انتخاب کنید</option>
-        <option value="1">ورود به کلاس</option>
-        <option value="2">مراجعه به دفتر</option>
-        <option value="3">با وسایل از کلاس خارج شدن</option>
-    </select><br><br>
-
-    <input type="checkbox" id="agree">
-    <label for="agree">راهنما و شرایط را می‌پذیرم</label><br><br>
-
-    <button onclick="submitForm()">ارسال درخواست</button>
 </body>
 </html>
